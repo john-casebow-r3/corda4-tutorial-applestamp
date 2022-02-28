@@ -18,9 +18,7 @@ data class BasketOfApples(
         constructor(description: String, farm: Party, weight: Int) : this(description, farm, farm, weight)
 
         fun changeOwner(newOwner: Party): BasketOfApples {
-            val new = this.copy()
-            new.owner = newOwner
-            return new
+            return BasketOfApples(description, farm, newOwner, weight)
         }
     }
 
