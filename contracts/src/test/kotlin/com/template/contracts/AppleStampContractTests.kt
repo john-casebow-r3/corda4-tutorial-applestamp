@@ -2,13 +2,12 @@ package com.template.contracts
 
 import com.template.states.AppleStamp
 import com.template.states.BasketOfApples
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.CordaX500Name
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.node.MockServices
 import net.corda.testing.node.ledger
 import org.junit.Test
-import com.template.states.TemplateState
-import net.corda.core.contracts.UniqueIdentifier
 
 class AppleStampContractTests {
     private val ledgerServices: MockServices = MockServices(listOf("com.template"))
@@ -17,8 +16,8 @@ class AppleStampContractTests {
 
     @Test
     fun issue_command_should_have_no_input_states_and_one_output_state() {
-        val state = AppleStamp("test", alice.party, bob.party, UniqueIdentifier("foo"));
-        val state2 = AppleStamp("test2", alice.party, bob.party, UniqueIdentifier("foo2"));
+        val state = AppleStamp("test", alice.party, bob.party, 10, UniqueIdentifier("foo"));
+        val state2 = AppleStamp("test2", alice.party, bob.party, 10, UniqueIdentifier("foo2"));
         ledgerServices.ledger {
             // fail
             transaction {
@@ -47,8 +46,8 @@ class AppleStampContractTests {
 
     @Test
     fun issue_command_output_state_should_have_description() {
-        val badState = AppleStamp("", alice.party, bob.party, UniqueIdentifier("foo"));
-        val goodState = AppleStamp("test2", alice.party, bob.party, UniqueIdentifier("foo"));
+        val badState = AppleStamp("", alice.party, bob.party, 10, UniqueIdentifier("foo"));
+        val goodState = AppleStamp("test2", alice.party, bob.party, 10, UniqueIdentifier("foo"));
         ledgerServices.ledger {
             // fail
             transaction {
@@ -68,7 +67,7 @@ class AppleStampContractTests {
 
     @Test
     fun bad_command() {
-        val stampState = AppleStamp("test", alice.party, bob.party, UniqueIdentifier("foo"));
+        val stampState = AppleStamp("test", alice.party, bob.party, 10, UniqueIdentifier("foo"));
         val goodBasketState = BasketOfApples("test", alice.party, bob.party, 100);
         ledgerServices.ledger {
             transaction {

@@ -137,3 +137,56 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     }
 
 }
+
+apply from: 'postgres.gradle'
+
+//task prepareDockerNodes(type: net.corda.plugins.Dockerform, dependsOn: ['jar','generateInitScripts']) {
+task prepareDockerNodes(type: net.corda.plugins.Dockerform, dependsOn: ['jar']) {
+    // set docker image for each node
+    dockerImage = "corda/corda-zulu-java1.8-4.8.5"
+
+    nodeDefaults {
+        cordapp project(':contracts')
+        cordapp project(':workflows')
+        //runSchemaMigration = true
+    }
+    node {
+        name "O=Notary,L=London,C=GB"
+        notary = [validating : false]
+        p2pPort 10002
+        rpcSettings {
+            address("localhost:10003")
+            adminAddress("localhost:10023")
+        }
+        projectCordapp {
+            deploy = false
+        }
+        cordapps.clear()
+        sshdPort 2222
+    }
+    node {
+        name "O=HomeFarm,L=London,C=GB"
+        p2pPort 10002
+        rpcSettings {
+            address("localhost:10003")
+            adminAddress("localhost:10023")
+        }
+        rpcUsers = [[user: "user1", "password": "test", "permissions": ["ALL"]]]
+        sshdPort 2223
+    }
+    node {
+        name "O=Bob,L=New York,C=US"
+        p2pPort 10002
+        rpcSettings {
+            address("localhost:10003")
+            adminAddress("localhost:10023")
+        }
+        rpcUsers = [[user: "user1", "password": "test", "permissions": ["ALL"]]]
+        sshdPort 2224
+    }
+
+    // This property needs to be outside the node {...} elements
+    dockerImage = "corda/corda-zulu-java1.8-4.8.5"
+
+    //dockerConfig = postgres
+}

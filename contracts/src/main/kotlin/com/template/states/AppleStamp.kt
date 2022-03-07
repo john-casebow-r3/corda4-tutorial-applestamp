@@ -11,6 +11,7 @@ import net.corda.core.identity.Party
 data class AppleStamp(val stampDesc:String,
                       val issuer: Party,
                       val holder: Party,
+                      val weight: Int,
                       override val linearId: UniqueIdentifier,
                       override val participants: List<AbstractParty> = listOf(issuer, holder)
 ) : LinearState

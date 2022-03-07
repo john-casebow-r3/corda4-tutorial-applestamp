@@ -5,6 +5,7 @@ import net.corda.client.rpc.CordaRPCConnection
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.utilities.NetworkHostAndPort
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -25,6 +26,7 @@ private const val CORDA_RPC_PORT = "config.rpc.port"
  * @param password The password for logging into the RPC client.
  * @property proxy The RPC proxy.
  */
+@PropertySource("classpath:rpc.properties")
 @Component
 open class NodeRPCConnection(
         @Value("\${$CORDA_NODE_HOST}") private val host: String,

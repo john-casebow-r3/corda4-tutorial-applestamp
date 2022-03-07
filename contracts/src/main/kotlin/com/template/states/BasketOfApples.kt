@@ -1,6 +1,5 @@
 package com.template.states
 
-import com.template.contracts.AppleStampContract
 import com.template.contracts.BasketOfApplesContract
 import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.ContractState

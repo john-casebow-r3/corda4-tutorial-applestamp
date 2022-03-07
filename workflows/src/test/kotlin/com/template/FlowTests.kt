@@ -1,15 +1,18 @@
 package com.template
 
-import net.corda.testing.node.*
+import com.template.flows.Initiator
+import com.template.states.TemplateState
+import net.corda.core.node.services.Vault.StateStatus
+import net.corda.core.node.services.vault.QueryCriteria
+import net.corda.core.transactions.SignedTransaction
+import net.corda.testing.node.MockNetwork
+import net.corda.testing.node.MockNetworkParameters
+import net.corda.testing.node.StartedMockNode
+import net.corda.testing.node.TestCordapp
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import com.template.states.TemplateState
-import java.util.concurrent.Future;
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.SignedTransaction
-import com.template.flows.Initiator
-import net.corda.core.node.services.Vault.StateStatus
+import java.util.concurrent.Future
 
 
 class FlowTests {

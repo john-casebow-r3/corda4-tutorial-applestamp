@@ -13,7 +13,7 @@ class AppleStampTests {
 
     @Test
     fun constructorTest() {
-        val state = AppleStamp("test", alice.party, bob.party, UniqueIdentifier("foo"));
+        val state = AppleStamp("test", alice.party, bob.party, 10, UniqueIdentifier("foo"));
         assertEquals(listOf(alice.party, bob.party), state.participants)
     }
 }

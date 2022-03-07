@@ -1,0 +1,36 @@
+h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    padding: 10px;
+}
+.grid-container-6-cols {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto;
+    padding: 10px;
+}
+.grid-item {
+    font-family: Arial, Helvetica, sans-serif;
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    font-size: 20px;
+    text-align: center;
+}
+.grid-item-title {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    background: lightgray;
+    padding: 10px;
+    font-size: 20px;
+    text-align: center;
+}
+.grid-item-no-border {
+    padding: 10px;
+    font-size: 30px;
+    text-align: center;
+ }

@@ -1,7 +1,6 @@
 package com.template.states
 
 import groovy.util.GroovyTestCase.assertEquals
-import junit.framework.Assert.assertFalse
 import net.corda.core.identity.CordaX500Name
 import net.corda.testing.core.TestIdentity
 import org.junit.Test
@@ -31,6 +30,6 @@ class BasketOfApplesTests {
         val newState = state.changeOwner(bob.party)
         assertEquals(farm.party, state.owner)
         assertEquals(bob.party, newState.owner)
-        assertFalse(state == newState)
+        assert(state != newState)
     }
 }

@@ -10,6 +10,7 @@ import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.node.services.Vault
 import net.corda.core.node.services.vault.QueryCriteria
+import net.corda.core.node.services.vault.builder
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import java.util.*
@@ -18,14 +19,15 @@ import java.util.Arrays.asList
 
 @InitiatingFlow
 @StartableByRPC
-class RedeemApplesInitiator(private val buyer: Party, private val stampId: UniqueIdentifier) :
+class RedeemStampInitiator(private val buyer: Party, private val stampId: UniqueIdentifier) :
     FlowLogic<SignedTransaction>() {
+
+    private fun equals(party1: Party, party2: Party): Boolean {
+        return party1.name.commonName.equals(party2.name.commonName)
+    }
 
     @Suspendable
     override fun call(): SignedTransaction {
-        logger.info("--------------")
-        logger.info("Initiating Flow: RedeemApplesInitiator")
-        logger.info("--------------")
 
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
 
@@ -35,17 +37,22 @@ class RedeemApplesInitiator(private val buyer: Party, private val stampId: Uniqu
             .withRelevancyStatus(Vault.RelevancyStatus.RELEVANT)
             .withUuid(listOf(UUID.fromString(stampId.toString())))
         val appleStamp: StateAndRef<AppleStamp> = serviceHub.vaultService.queryBy(AppleStamp::class.java, inputCriteria).states.get(0)
+        val stampWeight: Int = appleStamp.state.data.weight
+        val stampIssuer: Party = appleStamp.state.data.issuer
 
         // Find the BasketOfApples output state that we want to modify the owner of
+        // Needs to be of the same weight
+
         val outputCriteria: QueryCriteria = QueryCriteria.VaultQueryCriteria()
             .withStatus(Vault.StateStatus.UNCONSUMED)
             .withRelevancyStatus(Vault.RelevancyStatus.RELEVANT)
-        val basketOfApples: StateAndRef<BasketOfApples> = serviceHub.vaultService.queryBy(BasketOfApples::class.java, outputCriteria).states.get(0)
+        val states = serviceHub.vaultService.queryBy(BasketOfApples::class.java, outputCriteria).states
+        val basketOfApples: StateAndRef<BasketOfApples> = states.filter{
+                it -> it.state.data.weight == stampWeight && equals(it.state.data.owner, stampIssuer)
+        }.get(0)
         val original: BasketOfApples = basketOfApples.state.data
 
         val newState = original.changeOwner(buyer)
-
-        //val notary: Party = basketOfApples.state.notary
 
         val txBuilder: TransactionBuilder = TransactionBuilder(notary)
             .addInputState(appleStamp)
@@ -63,15 +70,12 @@ class RedeemApplesInitiator(private val buyer: Party, private val stampId: Uniqu
     }
 }
 
-@InitiatedBy(RedeemApplesInitiator::class)
-class RedeemApplesResponder(private val session: FlowSession) : FlowLogic<SignedTransaction>() {
+@InitiatedBy(RedeemStampInitiator::class)
+class RedeemStampResponder(private val session: FlowSession) : FlowLogic<SignedTransaction>() {
 
     @Suspendable
     @Throws(FlowException::class)
     override fun call(): SignedTransaction {
-        logger.info("--------------")
-        logger.info("Initiating Flow: RedeemApplesResponder")
-        logger.info("--------------")
 
         val signedTransaction = subFlow(object : SignTransactionFlow(session) {
             @Throws(FlowException::class)
@@ -79,7 +83,6 @@ class RedeemApplesResponder(private val session: FlowSession) : FlowLogic<Signed
                 // NOP
             }
         })
-        logger.info("Initiating subFlow: ReceiveFinalityFlow")
         return subFlow(ReceiveFinalityFlow(session, signedTransaction.id))
     }
 }

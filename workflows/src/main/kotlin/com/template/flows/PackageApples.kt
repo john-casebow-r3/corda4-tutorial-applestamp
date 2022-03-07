@@ -1,12 +1,13 @@
 package com.template.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.template.contracts.AppleStampContract
 import com.template.contracts.BasketOfApplesContract
-import com.template.states.AppleStamp
 import com.template.states.BasketOfApples
 import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.flows.*
+import net.corda.core.flows.FinalityFlow
+import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
@@ -19,9 +20,6 @@ class PackageApplesInitiator(private val appleDescription: String, private val w
 
     @Suspendable
     override fun call(): SignedTransaction {
-        logger.info("--------------")
-        logger.info("Initiating Flow: PackageApplesInitiator")
-        logger.info("--------------")
 
         val notary: Party = serviceHub.networkMapCache.notaryIdentities[0];
         val identifier: UniqueIdentifier = UniqueIdentifier();

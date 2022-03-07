@@ -2,13 +2,12 @@ package com.template.contracts
 
 import com.template.states.AppleStamp
 import com.template.states.BasketOfApples
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.CordaX500Name
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.node.MockServices
 import net.corda.testing.node.ledger
 import org.junit.Test
-import com.template.states.TemplateState
-import net.corda.core.contracts.UniqueIdentifier
 
 class BasketOfApplesContractTests {
     private val ledgerServices: MockServices = MockServices(listOf("com.template"))
@@ -64,8 +63,9 @@ class BasketOfApplesContractTests {
     }
 
     @Test
-    fun redeem_command_should_have_one_input_state_and_one_output_state() {
-        val stampState = AppleStamp("test", alice.party, bob.party, UniqueIdentifier("foo"));
+    fun redeem_command_should_have_two_input_states_and_one_output_state() {
+        val initialBasketState = BasketOfApples("test", alice.party, alice.party, 100);
+        val stampState = AppleStamp("test", alice.party, bob.party, 10, UniqueIdentifier("foo"));
         val basketState = BasketOfApples("test", alice.party, bob.party, 100);
         ledgerServices.ledger {
             // fail
@@ -83,6 +83,7 @@ class BasketOfApplesContractTests {
             // pass
             transaction {
                 input(BasketOfApplesContract.ID, stampState)
+                input(BasketOfApplesContract.ID, initialBasketState)
                 output(BasketOfApplesContract.ID, basketState)
                 command(alice.publicKey, BasketOfApplesContract.Commands.Redeem())
                 verifies()
@@ -92,20 +93,48 @@ class BasketOfApplesContractTests {
 
     @Test
     fun redeem_command_issuer_of_stamp_should_be_same_as_basket() {
-        val stampState = AppleStamp("test", alice.party, bob.party, UniqueIdentifier("foo"));
-        val badBasketState = BasketOfApples("test", fred.party, bob.party, 100);
-        val goodBasketState = BasketOfApples("test", alice.party, bob.party, 100);
+        val stampState = AppleStamp("test", alice.party, bob.party, 10, UniqueIdentifier("foo"));
+        val badInputBasketState = BasketOfApples("test", fred.party, fred.party, 100);
+        val goodInputBasketState = BasketOfApples("test", alice.party, alice.party, 100);
+        val outputBasketState = BasketOfApples("test", alice.party, bob.party, 100);
         ledgerServices.ledger {
             transaction {
-                input(BasketOfApplesContract.ID, stampState)
-                output(BasketOfApplesContract.ID, badBasketState)
+                input(AppleStampContract.ID, stampState)
+                input(BasketOfApplesContract.ID, badInputBasketState)
+                output(BasketOfApplesContract.ID, outputBasketState)
                 command(alice.publicKey, BasketOfApplesContract.Commands.Redeem())
                 fails()
             }
             // pass
             transaction {
-                input(BasketOfApplesContract.ID, stampState)
-                output(BasketOfApplesContract.ID, goodBasketState)
+                input(AppleStampContract.ID, stampState)
+                input(BasketOfApplesContract.ID, goodInputBasketState)
+                output(BasketOfApplesContract.ID, outputBasketState)
+                command(alice.publicKey, BasketOfApplesContract.Commands.Redeem())
+                verifies()
+            }
+        }
+    }
+
+    @Test
+    fun redeem_command_weight_of_stamp_should_be_same_as_basket() {
+        val stampState = AppleStamp("test", alice.party, bob.party, 10, UniqueIdentifier("foo"));
+        val badInputBasketState = BasketOfApples("test", alice.party, alice.party, 100);
+        val goodInputBasketState = BasketOfApples("test", alice.party, alice.party, 10);
+        val outputBasketState = BasketOfApples("test", alice.party, bob.party, 10);
+        ledgerServices.ledger {
+            transaction {
+                input(AppleStampContract.ID, stampState)
+                input(BasketOfApplesContract.ID, badInputBasketState)
+                output(BasketOfApplesContract.ID, outputBasketState)
+                command(alice.publicKey, BasketOfApplesContract.Commands.Redeem())
+                fails()
+            }
+            // pass
+            transaction {
+                input(AppleStampContract.ID, stampState)
+                input(BasketOfApplesContract.ID, goodInputBasketState)
+                output(BasketOfApplesContract.ID, outputBasketState)
                 command(alice.publicKey, BasketOfApplesContract.Commands.Redeem())
                 verifies()
             }
@@ -114,19 +143,22 @@ class BasketOfApplesContractTests {
 
     @Test
     fun redeem_command_weight_should_be_greater_than_zero() {
-        val stampState = AppleStamp("test", alice.party, bob.party, UniqueIdentifier("foo"));
+        val initialBasketState = BasketOfApples("test", alice.party, alice.party, 100);
+        val stampState = AppleStamp("test", alice.party, bob.party, 10, UniqueIdentifier("foo"));
         val badBasketState = BasketOfApples("test", alice.party, bob.party, 0);
         val goodBasketState = BasketOfApples("test", alice.party, bob.party, 100);
         ledgerServices.ledger {
             transaction {
-                input(BasketOfApplesContract.ID, stampState)
+                input(AppleStampContract.ID, stampState)
+                input(BasketOfApplesContract.ID, initialBasketState)
                 output(BasketOfApplesContract.ID, badBasketState)
                 command(alice.publicKey, BasketOfApplesContract.Commands.Redeem())
                 fails()
             }
             // pass
             transaction {
-                input(BasketOfApplesContract.ID, stampState)
+                input(AppleStampContract.ID, stampState)
+                input(BasketOfApplesContract.ID, initialBasketState)
                 output(BasketOfApplesContract.ID, goodBasketState)
                 command(alice.publicKey, BasketOfApplesContract.Commands.Redeem())
                 verifies()
@@ -136,11 +168,11 @@ class BasketOfApplesContractTests {
 
     @Test
     fun bad_command() {
-        val stampState = AppleStamp("test", alice.party, bob.party, UniqueIdentifier("foo"));
+        val stampState = AppleStamp("test", alice.party, bob.party, 10, UniqueIdentifier("foo"));
         val goodBasketState = BasketOfApples("test", alice.party, bob.party, 100);
         ledgerServices.ledger {
             transaction {
-                input(BasketOfApplesContract.ID, stampState)
+                input(AppleStampContract.ID, stampState)
                 output(BasketOfApplesContract.ID, goodBasketState)
                 command(alice.publicKey, AppleStampContract.Commands.Issue())
                 fails()

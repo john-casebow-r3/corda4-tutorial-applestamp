@@ -27,7 +27,7 @@ class AppleStampContract : Contract {
             command is BasketOfApplesContract.Commands.Redeem -> {
                 // NOP
             }
-            else -> throw IllegalStateException("Incorrect command type: " + command)
+//            else -> throw IllegalStateException("Incorrect command type: " + command)
         }
     }
 

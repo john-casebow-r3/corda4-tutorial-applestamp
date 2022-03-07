@@ -12,18 +12,15 @@ import java.util.Arrays.asList
 
 @InitiatingFlow
 @StartableByRPC
-class CreateAndIssueAppleStampInitiator(private val stampDescription: String, private val holder: Party) :
+class CreateAndIssueAppleStampInitiator(private val stampDescription: String, private val holder: Party, private val weight: Int) :
     FlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call(): SignedTransaction {
-        logger.info("--------------")
-        logger.info("Initiating Flow: CreateAndIssueAppleStampInitiator")
-        logger.info("--------------")
 
         val notary: Party = serviceHub.networkMapCache.notaryIdentities.get(0);
         val stampId: UniqueIdentifier = UniqueIdentifier()
-        val initialState: AppleStamp = AppleStamp(stampDescription, ourIdentity, holder, stampId)
+        val initialState: AppleStamp = AppleStamp(stampDescription, ourIdentity, holder, weight, stampId)
 
         var builder: TransactionBuilder = TransactionBuilder(notary)
             .addOutputState(initialState)
